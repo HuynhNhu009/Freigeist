@@ -1,0 +1,9 @@
+.react-calendar__tile.selected-date {
+  background-color: #2563eb !important; /* xanh đậm */
+  color: white;
+  border-radius: 8px;
+}
+.react-calendar__tile.has-reminder {
+  background-color: #93c5fd; /* xanh nhạt */
+  border-radius: 8px;
+}
