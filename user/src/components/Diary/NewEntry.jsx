@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
-//import axios from 'axios';
 import axios from '@/utils/axiosInstance';
-
-
+import { useNavigate } from 'react-router-dom';
+import Spinner from '../Spinner';
 
 const NewEntry = () => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [images, setImages] = useState([]);
   const [content, setContent] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [availableTags, setAvailableTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]); // Chỉ chứa ID (số)
+  const [availableTags, setAvailableTags] = useState([]); // [{id, tag_name}]
+  const [loading, setLoading] = useState(false);
 
-  // ✅ Tải tag từ backend khi load trang
+  const navigate = useNavigate();
+
+  // ✅ Lấy danh sách tag từ backend
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const res = await axios.get("/api/tags/");
-        setAvailableTags(res.data); // giữ nguyên cấu trúc { id, tag_name }
-        if (res.data.length > 0) {
-          setSelectedTags([res.data[0].id]); // chọn tag đầu tiên mặc định
-        }
+        const res = await axios.get('/api/tags/');
+        // Chuyển đổi id thành số nếu cần
+        const tagsWithNumericIds = res.data.map(tag => ({
+          ...tag,
+          id: Number(tag.id) // Đảm bảo id là số
+        }));
+        setAvailableTags(tagsWithNumericIds);
       } catch (err) {
-        console.error("Lỗi tải tag:", err);
+        console.error('Lỗi tải tag:', err);
       }
     };
     fetchTags();
@@ -30,28 +34,28 @@ const NewEntry = () => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const selected = files.slice(0, 3 - images.length); // giới hạn 3 ảnh
+    const selected = files.slice(0, 3 - images.length);
     setImages([...images, ...selected]);
   };
 
   const removeImage = (index) => {
-    const newImgs = [...images];
-    newImgs.splice(index, 1);
-    setImages(newImgs);
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleTag = (id) => {
+    const numericId = Number(id); // Đảm bảo id là số
     setSelectedTags((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+      prev.includes(numericId) ? prev.filter((t) => t !== numericId) : [...prev, numericId]
     );
+    console.log('Selected Tags:', selectedTags); // Debug để kiểm tra
   };
 
   const handleCreate = async () => {
-   const user = JSON.parse(localStorage.getItem("user_info"));
-   const token = localStorage.getItem("access_token");
+    const user = JSON.parse(localStorage.getItem('user_info'));
+    const token = localStorage.getItem('access_token');
 
     if (!user || !token) {
-     alert("Vui lòng đăng nhập lại!");
+      alert('Vui lòng đăng nhập lại!');
       return;
     }
 
@@ -59,52 +63,43 @@ const NewEntry = () => {
       de_title: title,
       de_content: content,
       de_date: date,
-      tags: selectedTags,
+      tags: selectedTags, // Gửi mảng ID (số)
     };
 
-   try {
-    // 1️⃣ Tạo nhật ký trước
-      // const res = await axios.post("http://127.0.0.1:8888/api/diaries/", payload, {
-      //   headers: {
-      //    Authorization: `Bearer ${token}`,
-      //     "Content-Type": "application/json",
-      //   },
-      // });
-      const res = await axios.post("/api/diaries/", payload);
+    console.log('Payload:', payload); // Debug payload trước khi gửi
 
+    setLoading(true);
+    try {
+      // 1️⃣ Tạo nhật ký
+      const res = await axios.post('/api/diaries/', payload, { timeout: 30000 });
       const diaryId = res.data.id;
 
       // 2️⃣ Upload ảnh nếu có
       for (let i = 0; i < images.length; i++) {
         const formData = new FormData();
-        formData.append("image", images[i]);
-        formData.append("diary_entry", diaryId);
+        formData.append('di_imageUrl', images[i]);
+        formData.append('diary_entry', diaryId);
 
-      //   await axios.post("http://127.0.0.1:8888/api/images/", formData, {
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //       "Content-Type": "multipart/form-data",
-      //    },
-      // });
-      await axios.post("/api/images/", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
+        await axios.post('/api/images/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+        });
       }
 
-      alert("Tạo nhật ký thành công!");
-    // ✅ Reset state nếu muốn
+      alert('Tạo nhật ký thành công!');
+      navigate('/diary');
       setTitle('');
       setContent('');
       setImages([]);
       setSelectedTags([]);
     } catch (error) {
-      console.error("Lỗi tạo nhật ký:", error.response?.data || error);
-      alert("Tạo nhật ký thất bại!");
+      console.error('Lỗi tạo nhật ký:', error.response?.data || error);
+      alert('Tạo nhật ký thất bại!');
+    } finally {
+      setLoading(false);
     }
   };
 
-  
+  // Map ID sang object tag
   const selectedTagObjects = availableTags.filter((tag) =>
     selectedTags.includes(tag.id)
   );
@@ -112,9 +107,11 @@ const NewEntry = () => {
     (tag) => !selectedTags.includes(tag.id)
   );
 
-  return (
+  return loading ? (
+    <Spinner sentence="Đang tạo nhật ký..." />
+  ) : (
     <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 font-sans">
-      {/* Left Side */}
+      {/* Left */}
       <div className="lg:col-span-2 space-y-4 bg-white border border-gray-300 rounded-lg shadow-md p-4 h-[500px]">
         <div className="flex items-center justify-between">
           <input
@@ -148,10 +145,7 @@ const NewEntry = () => {
             onChange={handleImageUpload}
           />
           {images.map((file, index) => (
-            <div
-              key={index}
-              className="relative w-20 h-20 border rounded overflow-hidden"
-            >
+            <div key={index} className="relative w-20 h-20 border rounded overflow-hidden">
               <img
                 src={URL.createObjectURL(file)}
                 alt={`img-${index}`}
@@ -176,22 +170,17 @@ const NewEntry = () => {
         />
       </div>
 
-      {/* Right Side */}
+      {/* Right */}
       <div className="space-y-4 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex flex-col justify-between h-full">
-        {/* Hộp khuyến khích */}
+        {/* Box gợi ý */}
         <div className="bg-blue-100 rounded-lg p-4 text-center shadow-md">
-          <img
-            src="./public/desk01.jpeg"
-            alt="Illustration"
-            className="w-32 mx-auto mb-2"
-          />
+          <img src="./public/desk01.jpeg" alt="Illustration" className="w-32 mx-auto mb-2" />
           <p className="text-sm font-medium text-gray-700">
-            Cứ thoải mái viết xuống những cảm nhận chân thật nhất của bản thân
-            nhé!
+            Cứ thoải mái viết xuống những cảm nhận chân thật nhất của bản thân nhé!
           </p>
         </div>
 
-        {/* Selected Tags */}
+        {/* Tag đã chọn */}
         <div>
           <h4 className="font-semibold mb-1">Thẻ (tag):</h4>
           <div className="flex flex-wrap gap-2">
@@ -201,10 +190,7 @@ const NewEntry = () => {
                 className="bg-blue-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
               >
                 + {tag.tag_name}
-                <button
-                  onClick={() => toggleTag(tag.id)}
-                  className="text-red-600 font-bold"
-                >
+                <button onClick={() => toggleTag(tag.id)} className="text-red-600 font-bold">
                   ✖
                 </button>
               </span>
@@ -220,7 +206,7 @@ const NewEntry = () => {
               <label key={tag.id} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={false}
+                  checked={selectedTags.includes(tag.id)}
                   onChange={() => toggleTag(tag.id)}
                 />
                 {tag.tag_name}

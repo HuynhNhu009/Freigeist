@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from cloudinary.models import CloudinaryField
+from rest_framework import serializers
 import datetime
 
 
@@ -16,6 +17,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=255, blank=True, null=True)
     user_avatarUrl = models.CharField(max_length=300, blank=True, null=True)
     user_interests = models.TextField(blank=True, null=True)
+    user_isBlocked = models.BooleanField(default=False)
+
 
     USERNAME_FIELD = 'user_email' 
 
@@ -62,8 +65,7 @@ class DiaryTag(models.Model):
 class DiaryImage(models.Model):
     diary_entry = models.ForeignKey(DiaryEntry, on_delete=models.CASCADE, related_name='images')
     di_imageUrl = CloudinaryField('image')  
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
+    
 
 # --------- REMINDER ----------
 class Reminder(models.Model):
@@ -103,6 +105,7 @@ class FeedbackType(models.Model):
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feedbacks')
     feedback_type = models.ForeignKey(FeedbackType, on_delete=models.CASCADE)
+    fe_title = models.CharField(max_length=255, default="Untitled")
     fe_content = models.TextField()
     fe_submitedAt = models.DateTimeField(auto_now_add=True)
     fe_isResolve = models.BooleanField(default=False)

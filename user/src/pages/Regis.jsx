@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
+import Spinner from "../components/Spinner"; // Assuming Spinner is in components folder
 
 
 export default function Regis() {
@@ -14,8 +15,11 @@ export default function Regis() {
   const [dob, setDob] = useState("");
   const [agree, setAgree] = useState(false);
 
+  const [loading, setLoading] = useState(false); // Thêm state loading
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Bắt đầu loading
 
     if (!gender) {
       alert("Vui lòng chọn giới tính.");
@@ -60,9 +64,15 @@ export default function Regis() {
       alert("Lỗi kết nối máy chủ!");
       console.error("Lỗi gửi dữ liệu rồi ní ơi!", error);
     }
+    finally {
+      setLoading(false); // Kết thúc loading
+    }
   }
 
   return (
+    loading ? (
+      <Spinner sentence="Đang tạo tài khoản..." />)
+    : (
     <div className="bg-[url('/public/regis.jpg')]  h-screen w-screen bg-cover bg-center bg-no-repeat">
 
       {/* Form Container */}
@@ -161,5 +171,6 @@ export default function Regis() {
         </div>
       </div>
     </div>
+    )
   );
 }

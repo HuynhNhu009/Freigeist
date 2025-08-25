@@ -1,15 +1,18 @@
 import React from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
+import Spinner from "../components/Spinner"; // Assuming Spinner is in components folder
 
 const LoginForm = () => {
 
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // 🔄 bắt đầu loading
 
     try{
       const response = await axios.post("http://127.0.0.1:8888/api/login/", {
@@ -38,12 +41,18 @@ const LoginForm = () => {
       }
       console.error("Lỗi gửi dữ liệu rồi ní ơi!", error);
     }
+    finally {
+      setLoading(false); // 🔄 kết thúc loading
+    }
   }
 
   return (
-    <div className="bg-[url('/public/login_wallpaper03.jpg')] bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center">
-      <div className="bg-white/20 backdrop-blur-md rounded-xl p-8 w-96 shadow-lg border border-white/30">
-        <h2 className="text-2xl font-bold text-blue-900 mb-6">Login</h2>
+    loading ? (
+      <Spinner sentence="Đang đăng nhập..." />
+    ) : (
+      <div className="bg-[url('/public/login_wallpaper03.jpg')] bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center">
+        <div className="bg-white/20 backdrop-blur-md rounded-xl p-8 w-96 shadow-lg border border-white/30">
+          <h2 className="text-2xl font-bold text-blue-900 mb-6">Login</h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
@@ -89,6 +98,7 @@ const LoginForm = () => {
         </form>
       </div>
     </div>
+    )
   );
 };
 

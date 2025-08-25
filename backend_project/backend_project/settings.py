@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import cloudinary
+from decouple import config
+import cloudinary.uploader
+import cloudinary.api
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v!n*j-93d@e5l8liy5aq_#h_c4j5s_v2cy!&id#b1lv6kc9s01'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -44,18 +49,28 @@ INSTALLED_APPS = [
     'rest_framework',
     #'rest_framework_simplejwt.token_blacklist',  # nếu dùng DRF
     'api',             # app bạn tạo
-    'corsheaders', 'cloudinary',
+    'corsheaders', 
+    'cloudinary',
     'cloudinary_storage',
+
+    'django_crontab',
+
+    'django_apscheduler',
 
 ]
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'your_cloud_name',
-    'API_KEY': 'your_api_key',
-    'API_SECRET': 'your_api_secret',
+    'CLOUD_NAME': 'dnuk8fgza',
+    'API_KEY': '464532194969867',
+    'API_SECRET': 'ChFRBCRj3ZB8eGqsFaw0cpLbUEA',
 }
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+
+
 
 AUTH_USER_MODEL = 'api.User'
 
@@ -108,21 +123,14 @@ WSGI_APPLICATION = 'backend_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'freigeist_db',
-        'USER': 'root',
-        'PASSWORD': '12341234',
+        'NAME': config('DB_NAME', default='freigeist_db'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '3306',
     }
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dnuk8fgza',
-    'API_KEY': '464532194969867',
-    'API_SECRET': 'ChFRBCRj3ZB8eGqsFaw0cpLbUEA'
-}
 
 
 # Password validation
@@ -153,7 +161,7 @@ SIMPLE_JWT = {
     # 'BLACKLIST_AFTER_ROTATION': True,
     # 'ROTATE_REFRESH_TOKENS': True,
 
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Hoặc lâu hơn nếu cần
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=90),  # Hoặc lâu hơn nếu cần
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -166,11 +174,17 @@ SIMPLE_JWT = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 USE_I18N = True
 
 USE_TZ = True
+
+CRONJOBS = [
+    ('*/1 * * * *', 'django.core.management.call_command', ['send_reminders']),
+]
+
+
 
 
 # Static files (CSS, JavaScript, Images)
@@ -182,3 +196,20 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+import cloudinary
+
+cloudinary.config( 
+  cloud_name = config('CLOUDINARY_NAME'), 
+  api_key = config('CLOUDINARY_API_KEY'), 
+  api_secret = config('CLOUDINARY_API_SECRET'), 
+  secure = True
+)
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')

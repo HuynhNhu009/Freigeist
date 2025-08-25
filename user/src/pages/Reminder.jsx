@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+//import axios from "axios";
+import axios from "../api/axiosInstance";
 import ReminderCalendar from "../components/Reminder/ReminderCalendar";
 import ReminderForm from "../components/Reminder/ReminderForm";
 import ReminderList from "../components/Reminder//ReminderList";
 import Modal from "react-modal";
+import { format } from "date-fns";
 
 Modal.setAppElement('#root'); 
 
 export default function Reminder() {
   const [reminders, setReminders] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showForm, setShowForm] = useState(false);
+  //const [showForm, setShowForm] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   // Load danh sách reminders từ API
   const fetchRemindersAgain = () => {
-    axios.get("http://127.0.0.1:8888/api/reminders/")
+    axios.get("/reminders/")
       .then(res => setReminders(res.data))
       .catch(err => console.error("Error loading reminders:", err));
   };
@@ -26,26 +28,21 @@ export default function Reminder() {
 
   // Lọc công việc theo ngày đã chọn
   const selectedReminders = reminders.filter(r =>
-    r.rm_date === selectedDate.toISOString().split("T")[0]
+    r.rm_date === format(selectedDate, 'yyyy-MM-dd')
   );
 
-  // Hàm thêm reminder mới
-  const handleAddReminder = async (newReminder) => {
-    const reminderWithDate = {
-      ...newReminder,
-      rm_date: selectedDate.toISOString().split("T")[0]
-    };
-
+  
+  const handleDeleteReminder = async (id) => {
     try {
-      const res = await axios.post("/api/reminders/", reminderWithDate);
-      setReminders(prev => [...prev, res.data]);
-    } catch (err) {
-      console.error("Failed to add reminder:", err);
+      await axios.delete(`/reminders/${id}/`);
+      setReminders(prev => prev.filter(r => r.id !== id));
+   } catch (err) {
+     console.error("Failed to delete reminder:", err);
+    
     }
   };
-
   return (
-    <div className="flex flex-col md:flex-row gap-6 p-6 h-screen bg-[url('/public/notes.jpg')] bg-cover bg-center bg-no-repeat">
+    <div className="flex flex-col md:flex-row gap-6 p-6 h-screen bg-[url('/public/notes.jpg')] bg-cover bg-center bg-no-repeat ">
       
       {/* Khối danh sách công việc */}
       <div className="w-full md:w-full">
@@ -62,7 +59,10 @@ export default function Reminder() {
             </button>
           </div>
 
-          <ReminderList reminders={selectedReminders} />
+          <ReminderList 
+            reminders={selectedReminders} 
+            onDelete={handleDeleteReminder}
+          />
         </div>
       </div>
 
@@ -81,10 +81,13 @@ export default function Reminder() {
           isOpen={modalIsOpen}
           onRequestClose={() => setModalIsOpen(false)}
           contentLabel="Add Reminder"
+          className="w-[500px] max-w-[680px] bg-white p-6 rounded shadow-lg mx-auto mt-24 outline-none"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50"
+      
         >
           <ReminderForm
             onClose={() => setModalIsOpen(false)}
-            onAdd={handleAddReminder}
+            //nAdd={handleAddReminder}
             selectedDate={selectedDate}
             //onSuccess={fetchRemindersAgain}
           />
@@ -93,13 +96,4 @@ export default function Reminder() {
     </div>
   );
 }
-//         <ReminderForm
-//           onClose={() => setShowForm(false)}
-//           onAdd={handleAddReminder}
-//           selectedDate={selectedDate}
-//           //onSuccess={fetchRemindersAgain}
-//         />
-//       )}
-//     </div>
-//   );
-// }
+

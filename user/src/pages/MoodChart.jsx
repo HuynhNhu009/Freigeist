@@ -36,7 +36,7 @@ const MoodChart = () => {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4 font-sans h-full">
+    <div className="max-w-5xl mx-auto py-8 px-4 font-sans h-full bg-white p-4 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-center text-blue-800">
         Biểu đồ Cảm Xúc Cá Nhân
       </h2>

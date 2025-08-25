@@ -49,7 +49,7 @@ const UserProfile = () => {
 
   const handleSave = async () => {
     try {
-      await axios.put("http://127.0.0.1:8888/api/user/profile/", {
+      axios.patch(`http://127.0.0.1:8888/api/users/${userInfo.id}/`, {
         user_fullname: fullname,
         user_dob: dob,
         user_gender: gender,
@@ -57,6 +57,7 @@ const UserProfile = () => {
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
         },
       });
       const updated = { ...userInfo, user_fullname: fullname, user_dob: dob, user_gender: gender, user_interests: interests };
@@ -84,7 +85,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="flex max-w-5xl mx-auto mt-8 p-6 bg-gray-50 rounded-lg shadow-md">
+    <div className="flex max-w-5xl mx-auto mt-8 p-6 bg-gray-50 rounded-lg shadow-md h-[480px]">
       {/* Left Panel */}
       <div className="w-1/3 flex flex-col items-center border-r border-gray-300 pr-6">
         <div className="relative">
@@ -150,9 +151,7 @@ const UserProfile = () => {
               rows={3}
             />
           </div>
-        </div>
-
-        <div className="flex justify-between items-center mt-6">
+          <div className="flex justify-between items-center mt-6">
           <button
             onClick={handleLogout}
             className="bg-orange-500 text-white font-bold py-2 px-6 rounded hover:bg-orange-600"
@@ -168,6 +167,9 @@ const UserProfile = () => {
             Save
           </button>
         </div>
+        </div>
+
+        
       </div>
     </div>
   );

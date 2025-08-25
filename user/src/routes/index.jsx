@@ -9,6 +9,8 @@ import UserProfile from "../pages/UserProfile";
 import EditEntry from "../components/Diary/EditEntry";
 import MoodChart from "../pages/MoodChart";
 import Reminder from "../pages/Reminder";
+//import { path } from "framer-motion/client";
+import Feedback from "../pages/Feedback";
 
 export const routes = [
   {
@@ -43,6 +45,10 @@ export const routes = [
         path: "/reminder",
         element: <Reminder />,
       },
+      {
+        path: "/feedback",
+        element: <Feedback />,
+      }
     ],
   },
   {
