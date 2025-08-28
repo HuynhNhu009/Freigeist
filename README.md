@@ -28,6 +28,21 @@
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/freigeist.git
+git clone https://github.com/HuynhNhu009/freigeist.git
 cd freigeist
+
+
+Backend Setup (Django)
+
+```bash
+cd backend
+python -m venv venv
+pip install -r requirements.txt
+./remake.bat
+./run.bat
+
+
+
+
+
 
