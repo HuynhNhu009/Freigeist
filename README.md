@@ -23,6 +23,12 @@
 | Database      | MySQL                               |
 | Charts        |Recharts                             |
 
+## UI
+<img width="1892" height="962" alt="image" src="https://github.com/user-attachments/assets/495b41b3-d686-4fec-a315-8695bd2fb46e" />
+<img width="1898" height="951" alt="image" src="https://github.com/user-attachments/assets/5eab77f0-2c15-414f-8a92-bd7a50ea955c" />
+<img width="1897" height="952" alt="image" src="https://github.com/user-attachments/assets/72e3d685-6279-4c15-b500-1c4aa879a184" />
+<img width="1900" height="958" alt="image" src="https://github.com/user-attachments/assets/0a68086b-5cba-46bb-a277-8a8fc71dd760" />
+
 ## 🚀 Getting Started
 
 ### 1. Clone the Repository
@@ -34,11 +40,11 @@ cd freigeist
 
 ### 2. Backend setup (Django)
 ```bash
-cd backend
+cd backend_project
 python -m venv venv
 pip install -r requirements.txt
-./remake.bat
-./run.bat
+.\remake.bat
+.\run.bat
 ```
 ### 3. Frontend setup (ReacrJS + Vite)
 User (port: 3000)
@@ -100,5 +106,29 @@ EMAIL_USE_TLS=True
 DEFAULT_FROM_EMAIL=your_default_email
 ```
 
+### 📌 Notes
+- Make sure MySQL is running and accessible with the credentials above
 
+- The AI model can be resource-intensive — consider running on a capable machine or remote server
 
+- Production deployments should use HTTPS, Gunicorn/Uvicorn + Nginx, and secured secrets
+
+### 📌 Notes
+This project is licensed under the MIT License
+
+### 🤝 Contributing
+We welcome contributions of all kinds: feature requests, bug fixes, UI enhancements, and more.
+
+We welcome contributions of all kinds: feature requests, bug fixes, UI enhancements, and more.
+
+To contribute:
+
+1. Fork this repository
+
+2. Create a new branch (git checkout -b feature/your-feature)
+
+3. Commit your changes
+
+4. Push and open a Pull Request
+
+Freigeist is more than a journal — it's your personal companion on the path to emotional well-being. 🌱
